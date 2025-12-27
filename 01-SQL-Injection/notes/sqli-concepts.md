@@ -19,6 +19,8 @@ SQL Injection (SQLi) is a code injection technique that exploits security vulner
 
 ## Common Payloads
 
+![Common SQL Injection Payloads](../payloads.png)
+
 ```sql
 -- Authentication Bypass
 ' OR '1'='1
